@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contador diario de desempleo en España</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#EEF1EE;--ink:#172327;--muted:#56666A;--rule:#C9D1CE;--line:#2D5C88;--band:rgba(45,92,136,.16);--obs:#9A6B00;--btn:#DDE3E0;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181B;--ink:#E4EAE8;--muted:#95A5A8;--rule:#2A383C;--line:#86AEDB;--band:rgba(134,174,219,.18);--obs:#E2B650;--btn:#1C272B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10181B;--ink:#E4EAE8;--muted:#95A5A8;--rule:#2A383C;--line:#86AEDB;--band:rgba(134,174,219,.18);--obs:#E2B650;--btn:#1C272B;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1rem;line-height:1.55}
+main{max-width:64rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+.num{font-variant-numeric:tabular-nums}
+header p.kicker{margin:0 0 .25rem;color:var(--muted);font-size:.95rem}
+#counter{font-weight:800;font-size:clamp(3rem,11vw,7.5rem);line-height:1;letter-spacing:-.03em;margin:.2em 0 .15em}
+.lede{max-width:40rem;font-size:1.15rem;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:1rem 2.5rem;margin:1.75rem 0 0;padding:1.25rem 0 0;border-top:2px solid var(--ink)}
+.facts div{min-width:11rem}
+.facts dt{color:var(--muted);font-size:.85rem}
+.facts dd{margin:0;font-size:1.35rem;font-weight:700}
+.facts dd small{display:block;font-weight:400;font-size:.85rem;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:1rem 2rem;margin:2.5rem 0 1rem}
+.seg{display:flex;flex-direction:column;gap:.35rem}
+.seg span{font-size:.85rem;color:var(--muted)}
+.seg div{display:flex;background:var(--btn);border-radius:6px;padding:3px}
+.seg button{font:inherit;font-size:.9rem;border:0;background:transparent;color:var(--ink);padding:.4rem .8rem;border-radius:4px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--line);outline-offset:2px}
+.chartbox{position:relative;height:clamp(18rem,50vh,28rem)}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;font-size:.85rem;color:var(--muted);margin:.5rem 0 0}
+.legend i{display:inline-block;width:1.4rem;height:.6rem;margin-right:.4rem;vertical-align:middle;border-radius:2px}
+section{margin-top:3rem;max-width:44rem}
+h2{font-size:1.3rem;margin:0 0 .6rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:30rem;font-size:.95rem}
+th,td{text-align:right;padding:.45rem .6rem;border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:500;color:var(--muted)}
+tr.sel td{font-weight:700}
+p.note{color:var(--muted);font-size:.9rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="kicker" id="kicker"></p>
+  <div id="counter" class="num" aria-live="polite">–</div>
+  <p class="lede" id="lede"></p>
+  <dl class="facts">
+    <div><dt>Tasa de paro estimada</dt><dd class="num" id="f-rate"></dd></div>
+    <div><dt>Intervalo al 95 %</dt><dd class="num" id="f-band"></dd></div>
+    <div><dt id="f-prev-l"></dt><dd class="num" id="f-prev"></dd></div>
+    <div><dt>Último dato de Eurostat</dt><dd class="num" id="f-obs"></dd></div>
+  </dl>
+</header>
+
+<div class="controls">
+  <div class="seg"><span>Búsqueda en Google</span><div role="group" aria-label="Término" id="c-term">
+    <button data-v="paro" aria-pressed="true">«paro»</button><button data-v="desempleo" aria-pressed="false">«desempleo»</button></div></div>
+  <div class="seg"><span>Calibración de la serie diaria</span><div role="group" aria-label="Calibración" id="c-meth">
+    <button data-v="kost" aria-pressed="true">Kostopoulos et al. (2020)</button><button data-v="media" aria-pressed="false">Media mensual</button></div></div>
+  <div class="seg"><span>Mostrar</span><div role="group" aria-label="Unidad" id="c-unit">
+    <button data-v="p" aria-pressed="true">Personas</button><button data-v="u" aria-pressed="false">Tasa</button></div></div>
+  <div class="seg"><span>Periodo</span><div role="group" aria-label="Periodo" id="c-range">
+    <button data-v="365" aria-pressed="true">Último año</button><button data-v="all" aria-pressed="false">Desde 2020</button></div></div>
+</div>
+
+<div class="chartbox"><canvas id="chart" aria-label="Estimación diaria del desempleo frente al dato mensual de Eurostat"></canvas></div>
+<div class="legend"><span><i style="background:var(--line)"></i>Estimación diaria</span><span><i style="background:var(--band)"></i>Intervalo al 95 %</span><span><i style="background:var(--obs);height:.6rem;width:.6rem;border-radius:50%"></i>Dato mensual de Eurostat</span></div>
+
+<section>
+  <h2>¿Acierta?</h2>
+  <p>Error cuadrático medio de la estimación del último día de cada mes frente al dato posterior de Eurostat, en puntos de tasa de paro, entre enero de 2020 y <span id="evalend"></span>. La referencia es el mismo modelo sin datos de Google, estimado con la misma muestra.</p>
+  <div class="tablewrap"><table class="num" id="evaltab"></table></div>
+  <p class="note">El valor p corresponde al test de Diebold-Mariano frente a la referencia, con todo el periodo.</p>
+</section>
+
+<section>
+  <h2>Cómo se calcula</h2>
+  <p>La variable objetivo es la tasa de paro mensual de Eurostat sin desestacionalizar. El modelo explica su variación interanual con sus dos retardos y la variación interanual del logaritmo del índice de Google Trends del mismo mes, y se reestima cada mes solo con la información disponible entonces.</p>
+  <p>Cada día, el índice mensual del mes en curso se aproxima con la media de los últimos 28 días de la serie diaria, lo que neutraliza el efecto del día de la semana. Como Eurostat publica con unos dos meses de retraso, primero se estima el mes anterior y esa estimación entra como retardo del mes actual. Las personas se obtienen aplicando la tasa a la población activa estimada.</p>
+  <p>La serie diaria se construye descargando cada mes por separado y ponderándolo con el índice mensual, como en el apéndice de Kostopoulos, Meyer y Uhr (2020, Journal of Financial Markets). La alternativa reescala cada mes para que su media coincida con el índice mensual.</p>
+  <p class="note" id="stamp"></p>
+</section>
+</main>
+<script>
+const D=__DATA__;
+const st={term:'paro',meth:'kost',unit:'p',range:'365'};
+const nf=(x,d=0)=>x.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const mesTxt=s=>{const[y,m]=s.split('-');return MES[+m-1]+' de '+y};
+const fecha=s=>{const[y,m,d]=s.split('-');return (+d)+' de '+MES[+m-1]+' de '+y};
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const persons=k=>Math.round(k)*1000;
+let chart,animDone=false;
+function ser(){return D.series[st.term+'|'+st.meth]}
+function renderHead(){
+  const S=ser(),i=D.dates.length-1,last=D.dates[i],u=S.u[i],p=S.p[i],lf=S.lf[i],h=1.96*S.rmse;
+  document.getElementById('kicker').textContent='Contador diario de desempleo en España';
+  const target=persons(p),el=document.getElementById('counter');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!animDone&&!reduce){animDone=true;const t0=performance.now(),from=Math.round(target*.97);
+    const step=t=>{const k=Math.min(1,(t-t0)/1200),e=1-Math.pow(1-k,3);el.textContent=nf(Math.round((from+(target-from)*e)/1000)*1000);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
+  else el.textContent=nf(target);
+  const mesAct=last.slice(0,7);
+  document.getElementById('lede').textContent=`personas en paro estimadas para ${mesTxt(mesAct)}, con las búsquedas de «${st.term}» en Google hasta el ${fecha(last)}.`;
+  document.getElementById('f-rate').textContent=nf(u,2)+' %';
+  document.getElementById('f-band').innerHTML=`${nf(u-h,1)} % a ${nf(u+h,1)} %<small>${nf(persons((u-h)*lf/100))} a ${nf(persons((u+h)*lf/100))}</small>`;
+  document.getElementById('f-prev-l').textContent=mesTxt(S.prev.mes)+', aún sin dato oficial';
+  document.getElementById('f-prev').innerHTML=`${nf(S.prev.u,2)} %<small>${nf(persons(S.prev.p))} personas</small>`;
+  const o=D.obs[D.obs.length-1];
+  document.getElementById('f-obs').innerHTML=`${nf(o.u,1)} %<small>${mesTxt(D.last_obs)}, ${nf(persons(o.p))} personas</small>`;
+  document.getElementById('stamp').textContent=`Datos: Eurostat (une_rt_m) y Google Trends hasta el ${fecha(last)}. Actualizado el ${fecha(D.generado)}; la página se actualiza una vez al mes y el último día puede ser parcial.`;
+}
+function renderTable(){document.getElementById('evalend').textContent=mesTxt(D.last_obs);
+  const E=D.eval,rows=[['Referencia sin Google',E.bench[0],E.bench[1],null]];
+  for(const t of ['paro','desempleo'])for(const m of ['kost','media']){const e=E[t+'|'+m];rows.push([`«${t}», ${m==='kost'?'Kostopoulos et al.':'media mensual'}`,e[0],e[1],e[2],t+'|'+m])}
+  const sel=st.term+'|'+st.meth;
+  document.getElementById('evaltab').innerHTML='<thead><tr><th>Modelo</th><th>RMSE</th><th>Sin COVID</th><th>Mejora</th><th>p</th></tr></thead><tbody>'+
+   rows.map(r=>`<tr class="${r[4]===sel?'sel':''}"><td>${r[0]}</td><td>${nf(r[1],3)}</td><td>${nf(r[2],3)}</td><td>${r[3]==null?'':nf((1-r[1]/E.bench[0])*100,0)+' %'}</td><td>${r[3]==null?'':nf(r[3],2)}</td></tr>`).join('')+'</tbody>';
+}
+function renderChart(){
+  const S=ser(),n=D.dates.length,start=st.range==='all'?0:n-365;
+  const lab=D.dates.slice(start),U=st.unit;
+  const val=(i)=>U==='u'?S.u[i]:persons(S.p[i]);
+  const h=i=>U==='u'?1.96*S.rmse:persons(1.96*S.rmse*S.lf[i]/100);
+  const mid=[],hi=[],lo=[];for(let i=start;i<n;i++){mid.push(val(i));hi.push(val(i)+h(i));lo.push(val(i)-h(i))}
+  const om=new Map(D.obs.map(o=>[o.d,U==='u'?o.u:persons(o.p)]));const ob=lab.map(d=>om.has(d)?om.get(d):null);
+  const cfg={type:'line',data:{labels:lab,datasets:[
+    {data:hi,borderWidth:0,pointRadius:0,fill:false,backgroundColor:css('--band')},
+    {data:lo,borderWidth:0,pointRadius:0,fill:'-1',backgroundColor:css('--band')},
+    {data:mid,borderColor:css('--line'),borderWidth:2,pointRadius:0,tension:0},
+    {data:ob,showLine:false,pointRadius:4,pointBackgroundColor:css('--obs'),pointBorderWidth:0}]},
+   options:{maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{filter:it=>it.datasetIndex>=2&&it.raw!=null,callbacks:{title:it=>fecha(it[0].label),
+      label:it=>(it.datasetIndex===2?'Estimación: ':'Eurostat: ')+(U==='u'?nf(it.raw,2)+' %':nf(it.raw))}}},
+    scales:{x:{grid:{display:false},ticks:{color:css('--muted'),autoSkip:false,maxRotation:0,callback:function(v,i){const d=lab[i];return d.endsWith('-01')&&(st.range==='all'?d.slice(5,7)==='01':true)?(st.range==='all'?d.slice(0,4):MES[+d.slice(5,7)-1].slice(0,3)+' '+d.slice(2,4)):null}}},
+     y:{grid:{color:css('--rule')},ticks:{color:css('--muted'),callback:v=>U==='u'?nf(v,1)+' %':nf(v/1e6,2)+' M'}}}}};
+  if(chart)chart.destroy();chart=new Chart(document.getElementById('chart'),cfg);
+}
+function bind(id,key){document.querySelectorAll('#'+id+' button').forEach(b=>b.addEventListener('click',()=>{st[key]=b.dataset.v;
+  document.querySelectorAll('#'+id+' button').forEach(x=>x.setAttribute('aria-pressed',x===b));render()}))}
+function render(){renderHead();renderTable();renderChart()}
+[['c-term','term'],['c-meth','meth'],['c-unit','unit'],['c-range','range']].forEach(a=>bind(...a));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',renderChart);
+if(window.Chart)render();else{renderHead();renderTable();document.querySelector('.chartbox').innerHTML='<p class="note">El gráfico no se ha podido cargar. Recarga la página.</p>'}
+</script>
+</body>
+</html>
