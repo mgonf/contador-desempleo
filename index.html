@@ -21,11 +21,19 @@ main{max-width:64rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
 header p.kicker{margin:0 0 .25rem;color:var(--muted);font-size:.95rem}
 #counter{font-weight:800;font-size:clamp(3rem,11vw,7.5rem);line-height:1;letter-spacing:-.03em;margin:.2em 0 .15em}
 .lede{max-width:40rem;font-size:1.15rem;margin:0}
-.facts{display:flex;flex-wrap:wrap;gap:1rem 2.5rem;margin:1.75rem 0 0;padding:1.25rem 0 0;border-top:2px solid var(--ink)}
-.facts div{min-width:11rem}
-.facts dt{color:var(--muted);font-size:.85rem}
-.facts dd{margin:0;font-size:1.35rem;font-weight:700}
-.facts dd small{display:block;font-weight:400;font-size:.85rem;color:var(--muted)}
+.chain{list-style:none;margin:1.75rem 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem 2rem}
+.chain li{border-top:3px solid var(--line);padding-top:.8rem;position:relative}
+.chain li.c-obs{border-top-color:var(--obs)}
+.chain li+li::before{content:"";position:absolute;top:-3px;left:-2rem;width:2rem;border-top:3px dotted var(--rule)}
+.chain p{margin:0}
+.c-when{font-weight:700;font-size:1.05rem}
+.c-what{color:var(--muted);font-size:.88rem;margin-bottom:.45rem!important}
+.c-rate{font-size:1.9rem;font-weight:800;line-height:1.1}
+.c-pers{font-size:1rem}
+.c-yoy{font-size:.9rem;margin-top:.35rem!important}
+.c-how{color:var(--muted);font-size:.85rem;margin-top:.35rem!important;line-height:1.4}
+.chain-note{color:var(--muted);font-size:.9rem;max-width:48rem;margin:1.1rem 0 0}
+@media (max-width:44rem){.chain{grid-template-columns:1fr}.chain li+li::before{display:none}}
 .controls{display:flex;flex-wrap:wrap;gap:1rem 2rem;margin:2.5rem 0 1rem}
 .seg{display:flex;flex-direction:column;gap:.35rem}
 .seg span{font-size:.85rem;color:var(--muted)}
@@ -67,12 +75,32 @@ p.note{color:var(--muted);font-size:.9rem}
   <p class="kicker" id="kicker"></p>
   <div id="counter" class="num" aria-live="polite">–</div>
   <p class="lede" id="lede"></p>
-  <dl class="facts">
-    <div><dt>Tasa de paro estimada</dt><dd class="num" id="f-rate"></dd></div>
-    <div><dt>Intervalo al 95 %</dt><dd class="num" id="f-band"></dd></div>
-    <div><dt id="f-prev-l"></dt><dd class="num" id="f-prev"></dd></div>
-    <div><dt>Último dato de Eurostat</dt><dd class="num" id="f-obs"></dd></div>
-  </dl>
+  <ol class="chain" aria-label="Del último dato oficial a la estimación de hoy">
+    <li class="c-obs">
+      <p class="c-when" id="c1-mes"></p>
+      <p class="c-what">Último dato publicado por Eurostat</p>
+      <p class="c-rate num" id="c1-u"></p>
+      <p class="c-pers num" id="c1-p"></p>
+      <p class="c-yoy num" id="c1-y"></p>
+    </li>
+    <li class="c-est">
+      <p class="c-when" id="c2-mes"></p>
+      <p class="c-what">Estimación, aún sin publicar por Eurostat</p>
+      <p class="c-rate num" id="c2-u"></p>
+      <p class="c-pers num" id="c2-p"></p>
+      <p class="c-yoy num" id="c2-y"></p>
+      <p class="c-how" id="c2-how"></p>
+    </li>
+    <li class="c-est c-now">
+      <p class="c-when" id="c3-mes"></p>
+      <p class="c-what" id="c3-what"></p>
+      <p class="c-rate num" id="c3-u"></p>
+      <p class="c-pers num" id="c3-p"></p>
+      <p class="c-yoy num" id="c3-y"></p>
+      <p class="c-how" id="c3-how"></p>
+    </li>
+  </ol>
+  <p class="chain-note">Eurostat publica con unos dos meses de retraso, así que el contador estima primero el mes anterior a partir del último dato oficial y después el mes en curso. Las tasas están sin desestacionalizar: para ver la tendencia, compara cada mes con el mismo mes del año anterior, no con el mes previo.</p>
 </header>
 
 <div class="controls">
@@ -227,6 +255,7 @@ const D={"dates":["2020-01-01","2020-01-02","2020-01-03","2020-01-04","2020-01-0
 const st={term:'paro',meth:'kost',unit:'p',range:'365'};
 const nf=(x,d=0)=>x.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
 const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 const mesTxt=s=>{const[y,m]=s.split('-');return MES[+m-1]+' de '+y};
 const fecha=s=>{const[y,m,d]=s.split('-');return (+d)+' de '+MES[+m-1]+' de '+y};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -243,13 +272,27 @@ function renderHead(){
   else el.textContent=nf(target);
   const mesAct=last.slice(0,7);
   document.getElementById('lede').textContent=`personas en paro estimadas para ${mesTxt(mesAct)}, con las búsquedas de «${st.term}» en Google hasta el ${fecha(last)}.`;
-  document.getElementById('f-rate').textContent=nf(u,2)+' %';
-  document.getElementById('f-band').innerHTML=`${nf(u-h,1)} % a ${nf(u+h,1)} %<small>${nf(persons((u-h)*lf/100))} a ${nf(persons((u+h)*lf/100))}</small>`;
-  document.getElementById('f-prev-l').textContent=mesTxt(S.prev.mes)+', aún sin dato oficial';
-  document.getElementById('f-prev').innerHTML=`${nf(S.prev.u,2)} %<small>${nf(persons(S.prev.p))} personas</small>`;
-  const o=D.obs[D.obs.length-1];
-  document.getElementById('f-obs').innerHTML=`${nf(o.u,1)} %<small>${mesTxt(D.last_obs)}, ${nf(persons(o.p))} personas</small>`;
-  document.getElementById('stamp').textContent=`Datos: Eurostat (une_rt_m) y Google Trends hasta el ${fecha(last)}. Actualizado el ${fecha(D.generado)}; la página se actualiza una vez al mes y el último día puede ser parcial.`;
+  const EU=new Map(D.eurostat.map(r=>[r.m,r])),mm=(s,k)=>{let[y,m]=s.split('-').map(Number);m+=k;while(m<1){m+=12;y--}while(m>12){m-=12;y++}return y+'-'+String(m).padStart(2,'0')};
+  const yoy=(val,mes,dec)=>{const r=EU.get(mm(mes,-12));if(!r||r.u==null)return '';const d=val-r.u,s=d>0?'+':d<0?'−':'';
+    return `${s}${nf(Math.abs(d),dec)} puntos frente a ${mesTxt(mm(mes,-12))} (${nf(r.u,1)}\u00a0%)`};
+  const o=EU.get(D.last_obs);
+  document.getElementById('c1-mes').textContent=cap(mesTxt(D.last_obs));
+  document.getElementById('c1-u').textContent=nf(o.u,1)+' %';
+  document.getElementById('c1-p').textContent=nf(persons(o.p))+' personas';
+  document.getElementById('c1-y').textContent=yoy(o.u,D.last_obs,1);
+  const pm=S.prev.mes,enCadena=mm(pm,-1)!==D.last_obs;
+  document.getElementById('c2-mes').textContent=cap(mesTxt(pm));
+  document.getElementById('c2-u').textContent=nf(S.prev.u,2)+' %';
+  document.getElementById('c2-p').textContent=nf(persons(S.prev.p))+' personas';
+  document.getElementById('c2-y').textContent=yoy(S.prev.u,pm,2);
+  document.getElementById('c2-how').textContent=`Con las búsquedas de todo el mes de ${mesTxt(pm).split(' de ')[0]}, ya cerrado, y ${enCadena?'las estimaciones de los meses intermedios':'el dato real de '+mesTxt(D.last_obs)}. Ya no depende de nuevas búsquedas: solo puede variar ligeramente por el muestreo de Google o por revisiones de Eurostat, y se sustituirá por el dato oficial cuando se publique.`;
+  document.getElementById('c3-mes').textContent=cap(mesTxt(mesAct));
+  document.getElementById('c3-what').textContent=`Estimación a ${fecha(last)}`;
+  document.getElementById('c3-u').textContent=nf(u,2)+' %';
+  document.getElementById('c3-p').textContent=nf(target)+' personas';
+  document.getElementById('c3-y').textContent=yoy(u,mesAct,2);
+  document.getElementById('c3-how').textContent=`Con las búsquedas de los últimos 28 días, hasta el ${fecha(last)}, y la estimación de ${mesTxt(pm)}. Intervalo al 95 %: ${nf(u-h,1)} % a ${nf(u+h,1)} % (${nf(persons((u-h)*lf/100))} a ${nf(persons((u+h)*lf/100))} personas). Se irá afinando hasta final de mes.`;
+  document.getElementById('stamp').textContent=`Datos: Eurostat (une_rt_m) y Google Trends hasta el ${fecha(last)}. Actualizado el ${fecha(D.generado)}. El último día puede ser parcial.`;
 }
 function renderTable(){document.getElementById('evalend').textContent=mesTxt(D.last_obs);
   const E=D.eval,rows=[['Referencia sin Google',E.bench[0],E.bench[1],null,null]];
