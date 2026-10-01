@@ -45,6 +45,8 @@ header p.kicker{margin:0 0 .25rem;color:var(--muted);font-size:.95rem}
 .seg button:focus-visible{outline:2px solid var(--line);outline-offset:2px}
 html[lang="es"] [data-l="en"],html[lang="en"] [data-l="es"]{display:none}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.topright{display:flex;align-items:center;gap:.9rem}
+.visits{color:var(--muted);font-size:.85rem;white-space:nowrap}
 .lang{display:flex;background:var(--btn);border-radius:6px;padding:3px}
 .lang button{font:inherit;font-size:.85rem;font-weight:700;border:0;background:transparent;color:var(--muted);padding:.3rem .6rem;border-radius:4px;cursor:pointer}
 .lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
@@ -91,7 +93,7 @@ p.note{color:var(--muted);font-size:.9rem}
 <body>
 <main>
 <header>
-  <div class="topbar"><p class="kicker" id="kicker"></p><div class="lang" role="group" aria-label="Idioma / Language" id="c-lang"><button data-v="es" lang="es" aria-pressed="true">ES</button><button data-v="en" lang="en" aria-pressed="false">EN</button></div></div>
+  <div class="topbar"><p class="kicker" id="kicker"></p><div class="topright"><span class="visits num" id="visits" hidden></span><div class="lang" role="group" aria-label="Idioma / Language" id="c-lang"><button data-v="es" lang="es" aria-pressed="true">ES</button><button data-v="en" lang="en" aria-pressed="false">EN</button></div></div></div>
   <div id="counter" class="num" aria-live="polite">–</div>
   <p class="lede" id="lede"></p>
   <ol class="chain" aria-label="Del último dato oficial a la estimación de hoy" data-en-aria="From the latest official figure to today’s estimate">
@@ -607,7 +609,12 @@ function applyStatic(){
   document.querySelectorAll('[data-en-aria]').forEach(el=>{if(el.dataset.esAria==null)el.dataset.esAria=el.getAttribute('aria-label');el.setAttribute('aria-label',EN()?el.dataset.enAria:el.dataset.esAria)});
   document.querySelectorAll('#c-lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===LANG));
 }
-function render(){renderHead();renderTable();renderChart()}
+let VISITAS=null;
+function renderVisits(){const el=document.getElementById('visits');if(VISITAS==null){el.hidden=true;return}
+  el.textContent=nf(VISITAS)+tr(' visitas',' visits');el.hidden=false}
+(async()=>{try{const r=await fetch('https://mgonf.goatcounter.com/counter/TOTAL.json');if(!r.ok)return;const j=await r.json();
+  const n=parseInt(String(j.count).replace(/[^0-9]/g,''),10);if(!isNaN(n)){VISITAS=n;renderVisits()}}catch(e){}})();
+function render(){renderHead();renderTable();renderChart();renderVisits()}
 applyStatic();renderInfo();renderComb();
 document.querySelectorAll('#c-lang button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.v===LANG)return;LANG=b.dataset.v;
   try{localStorage.setItem('lang',LANG)}catch(e){}
