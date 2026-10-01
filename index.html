@@ -64,7 +64,10 @@ html[lang="es"] [data-l="en"],html[lang="en"] [data-l="es"]{display:none}
 .nav-h::before{content:"";position:absolute;inset:-.6rem -.5rem}
 .nav-dates{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:.25rem}
 .legend{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;font-size:.85rem;color:var(--muted);margin:.5rem 0 0}
-.dls{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
+.dl-note{color:var(--muted);font-size:.88rem;margin:1.1rem 0 0;max-width:48rem}
+.dl-all{display:inline-flex;align-items:center;gap:.4rem;color:var(--ink);cursor:pointer;margin-left:.3rem;white-space:nowrap}
+.dl-all input{width:1rem;height:1rem;margin:0;accent-color:var(--ink);cursor:pointer}
+.dls{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.6rem}
 .dl{font:inherit;font-size:.9rem;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:.45rem .9rem;border-radius:6px;cursor:pointer}
 .dl:hover{background:var(--ink);color:var(--bg)}
 .dl:focus-visible{outline:2px solid var(--line);outline-offset:2px}
@@ -157,6 +160,7 @@ p.note{color:var(--muted);font-size:.9rem}
   <label><input type="checkbox" data-s="ci" checked><i style="background:var(--band)"></i><span data-en="95% interval">Intervalo al 95 %</span></label>
   <label><input type="checkbox" data-s="eu" checked><i style="background:var(--obs);height:.6rem;width:.6rem;border-radius:50%"></i><span data-en="Eurostat monthly figure">Dato mensual de Eurostat</span></label>
 </div>
+<p class="dl-note"><span data-en="The files contain the search term and calibration selected above.">Los archivos contienen el término de búsqueda y la calibración seleccionados arriba.</span> <label class="dl-all"><input type="checkbox" id="dl-all"><span data-en="Include all variants (robustness)">Incluir todas las variantes (robustez)</span></label></p>
 <div class="dls"><button class="dl" id="dl" type="button" data-en="Download daily data (CSV)">Descargar datos diarios (CSV)</button><button class="dl" id="dl-w" type="button" data-en="Download weekly data (CSV)">Descargar datos semanales (CSV)</button><button class="dl" id="dl-eu" type="button" data-en="Download Eurostat monthly data (CSV)">Descargar datos mensuales de Eurostat (CSV)</button><button class="dl" id="dl-rt" type="button" data-en="Download real-time estimates (CSV)">Descargar estimaciones en tiempo real (CSV)</button></div>
 
 <div data-l="es" lang="es">
@@ -265,16 +269,16 @@ p.note{color:var(--muted);font-size:.9rem}
 
 <section>
   <h2>Datos descargables</h2>
-  <p>Los cuatro botones debajo de la gráfica descargan archivos CSV con punto y coma como separador y coma decimal, que se abren directamente en Excel en español.</p>
+  <p>Los cuatro botones debajo de la gráfica descargan archivos CSV con punto y coma como separador y coma decimal, que se abren directamente en Excel en español. Para que sean manejables, por defecto solo incluyen la variante seleccionada arriba (término de búsqueda y calibración), y el nombre del archivo lo indica, por ejemplo <code>_paro_kost</code>. Marcando «Incluir todas las variantes» se descargan las cuatro, para comprobaciones de robustez.</p>
   <p><strong>Datos diarios.</strong> Una fila por día desde <span data-i="inicio"></span>, con estas columnas:</p>
   <ul class="lim">
     <li><code>fecha</code> y <code>mes_estimado</code>.</li>
     <li><code>tasa_referencia_AR</code>: estimación del mes en curso con el modelo de referencia sin Google.</li>
-    <li>Para cada una de las cuatro variantes («paro» y «desempleo», con calibración de Kostopoulos et al., <code>kost</code>, o por media mensual, <code>media</code>): la tasa estimada, los límites del intervalo al 95 %, los parados estimados y el componente de Google (tasa estimada menos tasa de referencia).</li>
-    <li>Para cada término: <code>indice_diario_kostopoulos</code>, el índice diario calibrado sin suavizar (0–100, un único 100 en todo el periodo), y <code>media28d_kostopoulos</code>, su media de los últimos 28 días en la escala del índice mensual, que es lo que entra en el modelo.</li>
+    <li>Para la variante seleccionada, o para las cuatro si se marca «Incluir todas las variantes» («paro» y «desempleo», con calibración de Kostopoulos et al., <code>kost</code>, o por media mensual, <code>media</code>): la tasa estimada, los límites del intervalo al 95 %, los parados estimados y el componente de Google (tasa estimada menos tasa de referencia).</li>
+    <li>Para el término seleccionado (o los dos): <code>indice_diario_kostopoulos</code>, el índice diario calibrado sin suavizar (0–100, un único 100 en todo el periodo), y <code>media28d_kostopoulos</code>, su media de los últimos 28 días en la escala del índice mensual, que es lo que entra en el modelo.</li>
     <li><code>tasa_eurostat</code> y <code>parados_eurostat</code>: el dato oficial, en el último día de cada mes.</li>
   </ul>
-  <p><strong>Datos semanales.</strong> Una fila por semana (de lunes a domingo, numerada según la norma ISO en <code>semana_iso</code>), con las mismas columnas de estimación que el CSV diario tomadas el último día disponible de la semana (<code>fecha_cierre</code>), que es la estimación que se conocía al cerrar la semana. En lugar del índice diario incluye <code>indice_semanal_kostopoulos</code>, la media de los siete días de la semana del índice calibrado, que ya elimina el efecto del día de la semana. La columna <code>dias</code> indica cuántos días tiene la semana; la última puede estar incompleta. El dato de Eurostat aparece en la semana que contiene el último día del mes.</p>
+  <p><strong>Datos semanales.</strong> Una fila por semana (de lunes a domingo, numerada según la norma ISO en <code>semana_iso</code>), con las mismas columnas de estimación que el CSV diario tomadas el último día disponible de la semana (<code>fecha_cierre</code>), que es la estimación que se conocía al cerrar la semana. En lugar del índice diario incluye <code>indice_semanal_kostopoulos</code>, la media de los siete días de la semana del índice calibrado, que ya elimina el efecto del día de la semana. La columna <code>dias</code> indica cuántos días tiene la semana; la última puede estar incompleta. El dato de Eurostat aparece en la semana que contiene el último día del mes. Como alternativa, <code>tasa_media_semana</code> y <code>parados_media_semana</code> dan la media de las estimaciones diarias de la semana. Hay que usarlas con cuidado en las semanas en que cambia el mes (<code>meses_en_semana</code> = 2), porque mezclan estimaciones de dos meses distintos, cada uno con su estacionalidad.</p>
   <p><strong>Datos mensuales de Eurostat.</strong> La serie completa de España desde 1986, con la tasa de paro y los parados, sin desestacionalizar y desestacionalizados. Los parados van en personas, no en miles.</p>
   <p><strong>Estimaciones en tiempo real.</strong> Una fila por actualización de la página, con la fecha de cálculo, el último día con datos de Google, el mes estimado, el último mes publicado por Eurostat, la estimación de referencia y, para cada variante, la tasa, los parados y el componente de Google tal como se calcularon ese día, junto con la estimación del mes anterior (columnas <code>anterior</code>).</p>
 </section>
@@ -399,16 +403,16 @@ p.note{color:var(--muted);font-size:.9rem}
 
 <section>
   <h2>Downloadable data</h2>
-  <p>The four buttons below the chart download CSV files. In the English version they use commas as separators and points as decimal marks. Column names are in Spanish and are the same in both versions, so code written for one works with the other.</p>
+  <p>The four buttons below the chart download CSV files. In the English version they use commas as separators and points as decimal marks. Column names are in Spanish and are the same in both versions, so code written for one works with the other. To keep them manageable, by default they only include the variant selected above (search term and calibration), as shown in the file name, e.g. <code>_paro_kost</code>. Ticking “Include all variants” downloads all four, for robustness checks.</p>
   <p><strong>Daily data.</strong> One row per day from <span data-i="inicio"></span>, with these columns:</p>
   <ul class="lim">
     <li><code>fecha</code> (date) and <code>mes_estimado</code> (month being estimated).</li>
     <li><code>tasa_referencia_AR</code>: estimate for the current month from the benchmark model without Google.</li>
-    <li>For each of the four variants («paro» and «desempleo», with Kostopoulos et al. calibration, <code>kost</code>, or monthly-mean calibration, <code>media</code>): the estimated rate (<code>tasa</code>), the bounds of the 95% interval (<code>tasa_inf95</code>, <code>tasa_sup95</code>), the estimated number of unemployed (<code>parados</code>) and the Google component (<code>componente_google</code>, estimated rate minus benchmark rate).</li>
-    <li>For each term: <code>indice_diario_kostopoulos</code>, the unsmoothed calibrated daily index (0–100, a single 100 over the whole period), and <code>media28d_kostopoulos</code>, its mean over the last 28 days on the scale of the monthly index, which is what enters the model.</li>
+    <li>For the selected variant, or all four if “Include all variants” is ticked («paro» and «desempleo», with Kostopoulos et al. calibration, <code>kost</code>, or monthly-mean calibration, <code>media</code>): the estimated rate (<code>tasa</code>), the bounds of the 95% interval (<code>tasa_inf95</code>, <code>tasa_sup95</code>), the estimated number of unemployed (<code>parados</code>) and the Google component (<code>componente_google</code>, estimated rate minus benchmark rate).</li>
+    <li>For the selected term (or both): <code>indice_diario_kostopoulos</code>, the unsmoothed calibrated daily index (0–100, a single 100 over the whole period), and <code>media28d_kostopoulos</code>, its mean over the last 28 days on the scale of the monthly index, which is what enters the model.</li>
     <li><code>tasa_eurostat</code> and <code>parados_eurostat</code>: the official rate and number of unemployed, on the last day of each month.</li>
   </ul>
-  <p><strong>Weekly data.</strong> One row per week (Monday to Sunday, ISO-numbered in <code>semana_iso</code>), with the same estimate columns as the daily CSV taken on the last available day of the week (<code>fecha_cierre</code>), i.e. the estimate known when the week closed. Instead of the daily index it includes <code>indice_semanal_kostopoulos</code>, the seven-day mean of the calibrated index over the week, which already removes day-of-week effects. The column <code>dias</code> gives the number of days in the week; the last one may be incomplete. The Eurostat figure appears in the week containing the last day of the month.</p>
+  <p><strong>Weekly data.</strong> One row per week (Monday to Sunday, ISO-numbered in <code>semana_iso</code>), with the same estimate columns as the daily CSV taken on the last available day of the week (<code>fecha_cierre</code>), i.e. the estimate known when the week closed. Instead of the daily index it includes <code>indice_semanal_kostopoulos</code>, the seven-day mean of the calibrated index over the week, which already removes day-of-week effects. The column <code>dias</code> gives the number of days in the week; the last one may be incomplete. The Eurostat figure appears in the week containing the last day of the month. As an alternative, <code>tasa_media_semana</code> and <code>parados_media_semana</code> give the mean of the week’s daily estimates. They should be used with care in weeks when the month changes (<code>meses_en_semana</code> = 2), because they mix estimates for two different months, each with its own seasonality.</p>
   <p><strong>Monthly Eurostat data.</strong> The complete series for Spain since 1986, with the unemployment rate (<code>tasa_paro</code>) and the number of unemployed (<code>parados</code>), not seasonally adjusted and seasonally adjusted (<code>desestacionalizada</code>). Unemployed are in persons, not thousands.</p>
   <p><strong>Real-time estimates.</strong> One row per update of the page, with the computation date, the last day with Google data, the month being estimated, the last month published by Eurostat, the benchmark estimate and, for each variant, the rate, the number of unemployed and the Google component as computed that day, together with the estimate for the previous month (<code>anterior</code> columns).</p>
 </section>
@@ -653,6 +657,9 @@ function bajaCSV(lineas,nombre){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre;
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 }
+function variantes(){const all=document.getElementById('dl-all').checked;
+  return all?{V:[['paro','kost'],['paro','media'],['desempleo','kost'],['desempleo','media']],T:['paro','desempleo'],suf:''}
+            :{V:[[st.term,st.meth]],T:[st.term],suf:'_'+st.term+'_'+st.meth}}
 const SEP=()=>EN()?',':';',decf=x=>x==null?'':(EN()?String(x):String(x).replace('.',','));
 function descargaEurostat(){
   const dec=decf;const pp=x=>x==null?'':persons(x);
@@ -662,7 +669,7 @@ function descargaEurostat(){
 }
 document.getElementById('dl-eu').addEventListener('click',descargaEurostat);
 function descargaCSV(){
-  const V=[['paro','kost'],['paro','media'],['desempleo','kost'],['desempleo','media']],T=['paro','desempleo'];
+  const {V,T,suf}=variantes();
   const dec=decf;
   const head=['fecha','mes_estimado','tasa_referencia_AR'];
   for(const[t,m]of V){const s=`${t}_${m}`;head.push(`tasa_${s}`,`tasa_inf95_${s}`,`tasa_sup95_${s}`,`parados_${s}`,`componente_google_${s}`)}
@@ -673,26 +680,31 @@ function descargaCSV(){
     for(const[t,m]of V){const S=D.series[t+'|'+m],h=1.96*S.rmse;r.push(dec(S.u[i]),dec(+(S.u[i]-h).toFixed(3)),dec(+(S.u[i]+h).toFixed(3)),persons(S.p[i]),dec(S.comp[i]))}
     for(const t of T)r.push(dec(D.gdia[t].idx[i]),dec(D.gdia[t].m28[i]));
     const o=om.get(d);r.push(o?dec(o.u):'',o?persons(o.p):'');L.push(r.join(SEP()))});
-  bajaCSV(L,`contador_desempleo_${D.dates[D.dates.length-1]}.csv`);
+  bajaCSV(L,`contador_desempleo${suf}_${D.dates[D.dates.length-1]}.csv`);
 }
 function descargaRT(){
-  const R=D.rt;if(!R||!R.length)return;const cols=[...new Set(R.flatMap(r=>Object.keys(r)))];
+  const R=D.rt;if(!R||!R.length)return;const {suf}=variantes();
+  const cols=[...new Set(R.flatMap(r=>Object.keys(r)))].filter(c=>!suf||!/_(paro|desempleo)_(kost|media)$/.test(c)||c.endsWith(suf));
   const txt=['fecha_calculo','fecha_datos','mes_estimado','ultimo_dato_eurostat'];
   const L=[cols.join(SEP())];for(const r of R)L.push(cols.map(c=>{const v=r[c]??'';return txt.includes(c)?v:decf(v)}).join(SEP()));
-  bajaCSV(L,`contador_desempleo_tiempo_real_${R[R.length-1].fecha_calculo}.csv`);
+  bajaCSV(L,`contador_desempleo_tiempo_real${suf}_${R[R.length-1].fecha_calculo}.csv`);
 }
 function descargaSemanal(){
-  const V=[['paro','kost'],['paro','media'],['desempleo','kost'],['desempleo','media']],T=['paro','desempleo'],dec=decf;
-  const head=['semana_iso','semana_inicio','semana_fin','dias','fecha_cierre','mes_estimado','tasa_referencia_AR'];
-  for(const[t,m]of V){const s=`${t}_${m}`;head.push(`tasa_${s}`,`tasa_inf95_${s}`,`tasa_sup95_${s}`,`parados_${s}`,`componente_google_${s}`)}
+  const {V,T,suf}=variantes(),dec=decf;
+  const head=['semana_iso','semana_inicio','semana_fin','dias','meses_en_semana','fecha_cierre','mes_estimado','tasa_referencia_AR'];
+  for(const[t,m]of V){const s=`${t}_${m}`;head.push(`tasa_${s}`,`tasa_inf95_${s}`,`tasa_sup95_${s}`,`parados_${s}`,`componente_google_${s}`,`tasa_media_semana_${s}`,`parados_media_semana_${s}`)}
   for(const t of T)head.push(`indice_semanal_kostopoulos_${t}`,`media28d_kostopoulos_${t}`);
   head.push('tasa_eurostat','parados_eurostat');
+  const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
   const om=new Map(D.obs.map(o=>[o.d,o]));const L=[head.join(SEP())];
-  for(const w of WK){const i=w.close,d=D.dates[i];const r=[w.iso,w.mon,w.end,w.idx.length,d,d.slice(0,7),dec(D.ref[i])];
-    for(const[t,m]of V){const S=D.series[t+'|'+m],h=1.96*S.rmse;r.push(dec(S.u[i]),dec(+(S.u[i]-h).toFixed(3)),dec(+(S.u[i]+h).toFixed(3)),persons(S.p[i]),dec(S.comp[i]))}
-    for(const t of T){const a=w.idx.map(k=>D.gdia[t].idx[k]).filter(v=>v!=null);r.push(dec(a.length?+(a.reduce((x,y)=>x+y,0)/a.length).toFixed(3):null),dec(D.gdia[t].m28[i]))}
+  for(const w of WK){const i=w.close,d=D.dates[i],nm=new Set(w.idx.map(k=>D.dates[k].slice(0,7))).size;
+    const r=[w.iso,w.mon,w.end,w.idx.length,nm,d,d.slice(0,7),dec(D.ref[i])];
+    for(const[t,m]of V){const S=D.series[t+'|'+m],h=1.96*S.rmse;
+      r.push(dec(S.u[i]),dec(+(S.u[i]-h).toFixed(3)),dec(+(S.u[i]+h).toFixed(3)),persons(S.p[i]),dec(S.comp[i]),
+        dec(+mean(w.idx.map(k=>S.u[k])).toFixed(3)),Math.round(mean(w.idx.map(k=>S.p[k])))*1000)}
+    for(const t of T){const a=w.idx.map(k=>D.gdia[t].idx[k]).filter(v=>v!=null);r.push(dec(a.length?+mean(a).toFixed(3):null),dec(D.gdia[t].m28[i]))}
     const ob=w.idx.map(k=>om.get(D.dates[k])).find(Boolean);r.push(ob?dec(ob.u):'',ob?persons(ob.p):'');L.push(r.join(SEP()))}
-  bajaCSV(L,`contador_desempleo_semanal_${D.dates[D.dates.length-1]}.csv`);
+  bajaCSV(L,`contador_desempleo_semanal${suf}_${D.dates[D.dates.length-1]}.csv`);
 }
 document.getElementById('dl-w').addEventListener('click',descargaSemanal);
 document.getElementById('dl-rt').addEventListener('click',descargaRT);
