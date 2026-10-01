@@ -1,10 +1,12 @@
 # Contador diario de desempleo en España
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23078008.svg)](https://doi.org/10.5281/zenodo.23078008)
+
 Estimación diaria del desempleo en España a partir de las búsquedas en Google.
 
 Web: https://mgonf.github.io/contador-desempleo/
 
-Autor: Marcos González-Fernández y Francisco José Sáez Trujillo, Universidad de León (ORCID 0000-0002-0977-370X)
+Autor: Marcos González-Fernández (ORCID 0000-0002-0977-370X) y Francisco José Sáez Trujillo, Universidad de León 
 
 ## Licencia
 
