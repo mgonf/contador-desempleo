@@ -64,6 +64,17 @@ html[lang="es"] [data-l="en"],html[lang="en"] [data-l="es"]{display:none}
 .nav-h::before{content:"";position:absolute;inset:-.6rem -.5rem}
 .nav-dates{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:.25rem}
 .legend{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;font-size:.85rem;color:var(--muted);margin:.5rem 0 0}
+.cite{margin:2rem 0 0;padding:1.1rem 1.25rem;border-left:3px solid var(--line);background:var(--btn);border-radius:0 6px 6px 0;max-width:52rem}
+.cite-h{font-size:1.1rem;margin:0 0 .4rem}
+.cite p{margin:.3rem 0}
+.cite-txt{font-size:.98rem;line-height:1.5;overflow-wrap:anywhere}
+.cite-act{display:flex;align-items:center;gap:.8rem;margin-top:.6rem}
+.cite-act .dl,.cite-bib .dl{margin:0;background:var(--bg)}
+.cite-ok{color:var(--muted);font-size:.85rem}
+.cite-bib{margin-top:.7rem}
+.cite-bib summary{cursor:pointer;font-size:.9rem;color:var(--muted)}
+.cite-bib pre{font-size:.8rem;background:var(--bg);padding:.7rem;border-radius:4px;overflow-x:auto;margin:.5rem 0}
+.cite a{color:inherit}
 .dl-note{color:var(--muted);font-size:.88rem;margin:1.1rem 0 0;max-width:48rem}
 .dl-all{display:inline-flex;align-items:center;gap:.4rem;color:var(--ink);cursor:pointer;margin-left:.3rem;white-space:nowrap}
 .dl-all input{width:1rem;height:1rem;margin:0;accent-color:var(--ink);cursor:pointer}
@@ -162,6 +173,25 @@ p.note{color:var(--muted);font-size:.9rem}
 </div>
 <p class="dl-note"><span data-en="The files contain the search term and calibration selected above.">Los archivos contienen el término de búsqueda y la calibración seleccionados arriba.</span> <label class="dl-all"><input type="checkbox" id="dl-all"><span data-en="Include all variants (robustness)">Incluir todas las variantes (robustez)</span></label></p>
 <div class="dls"><button class="dl" id="dl" type="button" data-en="Download daily data (Excel)">Descargar datos diarios (Excel)</button><button class="dl" id="dl-w" type="button" data-en="Download weekly data (Excel)">Descargar datos semanales (Excel)</button><button class="dl" id="dl-eu" type="button" data-en="Download Eurostat monthly data (Excel)">Descargar datos mensuales de Eurostat (Excel)</button><button class="dl" id="dl-rt" type="button" data-en="Download real-time estimates (Excel)">Descargar estimaciones en tiempo real (Excel)</button></div>
+<div class="cite" id="cite">
+  <div data-l="es"><h2 class="cite-h">Cómo citar</h2>
+    <p>Si usas estos datos o la web en un trabajo, cítalos así:</p>
+    <p class="cite-txt" id="cite-es">González-Fernández, M. y Sáez Trujillo, F. J. (2026). <em>Contador diario de desempleo en España</em> [Conjunto de datos]. Zenodo. https://doi.org/10.5281/zenodo.23078008</p></div>
+  <div data-l="en"><h2 class="cite-h">How to cite</h2>
+    <p>If you use these data or this website in your work, please cite them as:</p>
+    <p class="cite-txt" id="cite-en">González-Fernández, M. and Sáez Trujillo, F. J. (2026). <em>Daily unemployment counter for Spain</em> [Contador diario de desempleo en España] [Data set]. Zenodo. https://doi.org/10.5281/zenodo.23078008</p></div>
+  <div class="cite-act"><button class="dl" type="button" id="cite-copy" data-en="Copy citation">Copiar cita</button><span class="cite-ok" id="cite-ok" role="status" aria-live="polite"></span></div>
+  <details class="cite-bib"><summary>BibTeX</summary><pre id="cite-bib">@misc{gonzalezfernandez2026contador,
+  author    = {Gonz{\'a}lez-Fern{\'a}ndez, Marcos and S{\'a}ez Trujillo, Francisco Jos{\'e}},
+  title     = {Contador diario de desempleo en Espa{\~n}a (Daily unemployment counter for Spain)},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.23078008},
+  url       = {https://doi.org/10.5281/zenodo.23078008}
+}</pre><button class="dl" type="button" id="bib-copy" data-en="Copy BibTeX">Copiar BibTeX</button></details>
+  <p class="note"><span data-l="es">Los datos y contenidos se publican con licencia <a href="https://creativecommons.org/licenses/by/4.0/deed.es">CC BY 4.0</a>: puedes usarlos, compartirlos y adaptarlos, también con fines comerciales, siempre que cites la fuente.</span><span data-l="en">Data and content are published under a <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> licence: you may use, share and adapt them, including for commercial purposes, provided you cite the source.</span></p>
+</div>
+
 
 <div data-l="es" lang="es">
 <section class="ev">
@@ -706,7 +736,7 @@ async function exportar(base,titulo,head,rows){
   const last=D.dates[D.dates.length-1];
   try{await loadXLSX()}catch(e){
     const q=v=>v==null?'':String(v);bajaCSV([head.join(','),...rows.map(r=>r.map(q).join(','))],base+'.csv');return}
-  const cite=tr('González-Fernández, M. (2026). Contador diario de desempleo en España. https://doi.org/10.5281/zenodo.23078008','González-Fernández, M. (2026). Daily unemployment counter for Spain. https://doi.org/10.5281/zenodo.23078008');
+  const cite=tr('González-Fernández, M. y Sáez Trujillo, F. J. (2026). Contador diario de desempleo en España [Conjunto de datos]. Zenodo. https://doi.org/10.5281/zenodo.23078008','González-Fernández, M. and Sáez Trujillo, F. J. (2026). Daily unemployment counter for Spain [Contador diario de desempleo en España] [Data set]. Zenodo. https://doi.org/10.5281/zenodo.23078008');
   const leg=[[titulo],[],
     [tr('Fuente','Source'),tr('Contador diario de desempleo en España, a partir de Eurostat (une_rt_m) y Google Trends.','Daily unemployment counter for Spain, based on Eurostat (une_rt_m) and Google Trends.')],
     [tr('Web','Website'),'https://mgonf.github.io/contador-desempleo/'+(EN()?'?lang=en':'')],
@@ -767,6 +797,11 @@ document.getElementById('dl').addEventListener('click',descargaDiaria);
 document.getElementById('dl-w').addEventListener('click',descargaSemanal);
 document.getElementById('dl-eu').addEventListener('click',descargaEurostat);
 document.getElementById('dl-rt').addEventListener('click',descargaRT);
+function copiar(txt,btn){const ok=document.getElementById('cite-ok'),done=()=>{ok.textContent=tr('Copiado','Copied');setTimeout(()=>ok.textContent='',2500)};
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(txt).then(done,()=>fb());else fb();
+  function fb(){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()}}
+document.getElementById('cite-copy').addEventListener('click',()=>copiar(document.getElementById(EN()?'cite-en':'cite-es').textContent));
+document.getElementById('bib-copy').addEventListener('click',()=>copiar(document.getElementById('cite-bib').textContent));
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',renderChart);
 if(window.Chart)render();else{renderHead();renderTable();document.querySelector('.chartbox').innerHTML='<p class="note">'+tr('El gráfico no se ha podido cargar. Recarga la página.','The chart could not be loaded. Please reload the page.')+'</p>'}
 </script>
