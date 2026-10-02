@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "Si usas estos datos, cítalos así / If you use these data, please cite them as below."
+title: "Contador diario de desempleo en España (Daily unemployment counter for Spain)"
+type: dataset
+authors:
+  - family-names: "González-Fernández"
+    given-names: "Marcos"
+    orcid: "https://orcid.org/0000-0002-0977-370X"
+    affiliation: "Universidad de León"
+  - family-names: "Sáez Trujillo"
+    given-names: "Francisco José"
+    affiliation: "Universidad de León"
+doi: 10.5281/zenodo.23078008
+license: CC-BY-4.0
+url: "https://mgonf.github.io/contador-desempleo/"
