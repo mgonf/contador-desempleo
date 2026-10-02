@@ -16,5 +16,5 @@ adaptarlos, también con fines comerciales, siempre que cites al autor.
 
 ## Cita recomendada
 
-González-Fernández, M. y Sáez Trujillo, F.J. (2026). Contador diario de desempleo en España.
-https://mgonf.github.io/contador-desempleo/
+González-Fernández, M. y Sáez Trujillo, F. J. (2026). Contador diario de desempleo en España
+[Conjunto de datos]. Zenodo. https://doi.org/10.5281/zenodo.23078008
